@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using DictionaryMeta;
 
 namespace DictionaryVisualizer
 {
@@ -23,6 +24,12 @@ namespace DictionaryVisualizer
         public MainWindow()
         {
             InitializeComponent();
+
+            var dict = new Dictionary<int, string> { { 1, "one" }, { 2, "two" }, { 3, "three" }, { 4, "four" } };
+
+            var extractor = new DictionaryMetadataExtractor<int, string>();
+
+            var meta = extractor.ExtractMetadata(dict);
         }
     }
 }

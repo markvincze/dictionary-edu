@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -12,21 +13,23 @@ namespace DictionaryMeta
         public DictionaryMetadata<TKey, TValue> ExtractMetadata(Dictionary<TKey, TValue> dictionary)
         {
             var type = typeof (Dictionary<TKey, TValue>).GetNestedType("Entry", BindingFlags.NonPublic);
+            type = type.MakeGenericType(typeof (TKey), typeof (TValue));
 
-            var entries = GetFieldValue<object[]>(dictionary, "entries");
+            var entries = GetFieldValue<IEnumerable>(dictionary, "entries");
 
-            var convertedEntries = entries
-                .Select(e =>
-                    new DictionaryEntry<TKey, TValue>(
-                        GetFieldValue<int>(e, type, "hashCode"),
-                        GetFieldValue<int>(e, type, "next"),
-                        GetFieldValue<TKey>(e, type, "key"),
-                        GetFieldValue<TValue>(e, type, "value")))
-                .ToArray();
+            var convertedEntries = new List<DictionaryEntry<TKey, TValue>>();
+            foreach (var entry in entries)
+            {
+                convertedEntries.Add(new DictionaryEntry<TKey, TValue>(
+                        GetFieldValue<int>(entry, type, "hashCode"),
+                        GetFieldValue<int>(entry, type, "next"),
+                        GetFieldValue<TKey>(entry, type, "key"),
+                        GetFieldValue<TValue>(entry, type, "value")));
+            }
 
             return new DictionaryMetadata<TKey, TValue>(
                 GetFieldValue<int[]>(dictionary, "buckets"),
-                convertedEntries,
+                convertedEntries.ToArray(),
                 GetFieldValue<int>(dictionary, "count"),
                 GetFieldValue<int>(dictionary, "freeList"),
                 GetFieldValue<int>(dictionary, "freeCount"));
@@ -46,7 +49,7 @@ namespace DictionaryMeta
 
         private TField GetFieldValue<TField>(object obj, Type type, string fieldName)
         {
-            var fi = type.GetField(fieldName, BindingFlags.Instance | BindingFlags.NonPublic);
+            var fi = type.GetField(fieldName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 
             return (TField)fi.GetValue(obj);
         }
