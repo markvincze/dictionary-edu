@@ -21,7 +21,7 @@ namespace DictionaryVisualizer
     /// </summary>
     public partial class MainWindow : Window
     {
-        private DictionaryMetadata<string, Book> metadata;
+        private readonly DictionaryMetadata<string, Book> metadata;
 
         public MainWindow()
         {
@@ -30,14 +30,22 @@ namespace DictionaryVisualizer
             var book1 = new Book("J.R.R. Tolkien", "The Lord of the Rings");
             var book2 = new Book("Patrick Rothfuss", "Name of the Wind");
             var book3 = new Book("Frank Herbert", "Dune");
+            var book4 = new Book("Iain M. Banks", "Consider Phlebas");
+            var book5 = new Book("Isaac Asimov", "Foundation");
+            var book6 = new Book("Arthur Clarke", "2001: Space Odyssey");
 
             var dict = new Dictionary<string, Book>(5)
             {
                 { book1.Author, book1},
                 { book2.Author, book2},
-                { book3.Author, book3}
-
+                { book3.Author, book3},
+                { book4.Author, book3},
+                { book5.Author, book3},
+                { book6.Author, book3},
             };
+
+            dict.Remove(book2.Author);
+            dict.Remove(book5.Author);
 
             var extractor = new DictionaryMetadataExtractor<string, Book>();
 
@@ -101,7 +109,7 @@ namespace DictionaryVisualizer
                     ArrowsCanvas.Children.Add(head);
                 }
 
-                if (metadata.Entries[i].Key != null && metadata.Entries[i].Next != -1)
+                if (metadata.Entries[i].Next != -1 && (metadata.Entries[i].Key != null || metadata.Entries[i].Next > 0))
                 {
                     var entry1 = GetElement(i, 4);
                     Point entry1Pos = entry1.TransformToAncestor(this.RootGrid).Transform(new Point(0, 0));
